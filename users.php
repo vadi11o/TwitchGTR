@@ -1,5 +1,18 @@
 <?php
 
+$user_id = '';
+
+// Verificar si se proporcionó el parámetro "id" en la URL
+if (isset($_GET['id'])) {
+    // Obtener el valor del parámetro "id"
+    $user_id = $_GET['id'];
+
+    // Puedes realizar otras acciones según tus necesidades aquí
+} else {
+    // Si no se proporcionó el parámetro "id", mostrar un mensaje de error o realizar acciones adicionales según sea necesario
+    echo 'Error: El parámetro "id" no se proporcionó en la URL.';
+}
+
 // Datos de tu aplicación en Twitch
 $client_id = 'obl5c2tqnowx1ihivi6qlwd5dp2d0c';
 $client_secret = '6quagkprun03rxzngemtntly5jl79d';
@@ -30,8 +43,7 @@ $response = curl_exec($ch);
 
 // Verificar si hay errores
 if (curl_errno($ch)) {
-    echo 'Error al realizar la solicitud cURL para obtener el token: ' . curl_error($ch);
-    exit;
+    echo 'Error al realizar la solicitud cURL: ' . curl_error($ch);
 }
 
 // Cerrar la sesión cURL
@@ -40,17 +52,12 @@ curl_close($ch);
 // Decodificar la respuesta JSON
 $result = json_decode($response, true);
 
-// Verificar si hay errores en la respuesta para obtener el token
-if (isset($result['error'])) {
-    echo 'Error al obtener el token: ' . $result['error_description'];
-    exit;
-}
 
 // Token
 $token = $result['access_token'];
 
-// URL de la API de Twitch para obtener información sobre los streams
-$url = 'https://api.twitch.tv/helix/streams';
+// URL de la API de Twitch
+$url = 'https://api.twitch.tv/helix/users?id=' . $user_id;
 
 // Inicializar el recurso cURL
 $ch = curl_init($url);
@@ -67,8 +74,7 @@ $response = curl_exec($ch);
 
 // Verificar si hay errores
 if (curl_errno($ch)) {
-    echo 'Error al realizar la solicitud cURL para obtener información sobre los streams: ' . curl_error($ch);
-    exit;
+    echo 'Error al realizar la solicitud cURL: ' . curl_error($ch);
 }
 
 // Cerrar la sesión cURL
@@ -77,16 +83,7 @@ curl_close($ch);
 // Decodificar la respuesta JSON
 $result = json_decode($response, true);
 
-// Verificar si hay streams activos
-if (isset($result['data']) && !empty($result['data'])) {
-    // Iterar sobre los streams y mostrar información
-    foreach ($result['data'] as $stream) {
-        echo 'title: ' . $stream['title'] . '<br>';
-        echo 'user_name: ' . $stream['user_name'] . '<br>';
-        echo '---<br>';
-    }
-} else {
-    echo 'No hay streams activos en este momento.';
-}
+// Imprimir la respuesta
+print_r($result);
 
 ?>
