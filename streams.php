@@ -30,7 +30,9 @@ $response = curl_exec($ch);
 
 // Verificar si hay errores
 if (curl_errno($ch)) {
-    echo 'Error al realizar la solicitud cURL para obtener el token: ' . curl_error($ch);
+    // Devolver un error en formato JSON y terminar la ejecución
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Error al realizar la solicitud cURL para obtener el token: ' . curl_error($ch)]);
     exit;
 }
 
@@ -42,7 +44,9 @@ $result = json_decode($response, true);
 
 // Verificar si hay errores en la respuesta para obtener el token
 if (isset($result['error'])) {
-    echo 'Error al obtener el token: ' . $result['error_description'];
+    // Devolver un error en formato JSON y terminar la ejecución
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Error al obtener el token: ' . $result['error_description']]);
     exit;
 }
 
@@ -67,7 +71,9 @@ $response = curl_exec($ch);
 
 // Verificar si hay errores
 if (curl_errno($ch)) {
-    echo 'Error al realizar la solicitud cURL para obtener información sobre los streams: ' . curl_error($ch);
+    // Devolver un error en formato JSON y terminar la ejecución
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Error al realizar la solicitud cURL para obtener información sobre los streams: ' . curl_error($ch)]);
     exit;
 }
 
@@ -77,16 +83,25 @@ curl_close($ch);
 // Decodificar la respuesta JSON
 $result = json_decode($response, true);
 
+// Preparar la respuesta
+$respuesta = [];
+
 // Verificar si hay streams activos
 if (isset($result['data']) && !empty($result['data'])) {
-    // Iterar sobre los streams y mostrar información
     foreach ($result['data'] as $stream) {
-        echo 'title: ' . $stream['title'] . PHP_EOL;
-        echo 'user_name: ' . $stream['user_name'] . PHP_EOL;
-        echo '---' . PHP_EOL;
+        $respuesta[] = [
+            'title' => $stream['title'],
+            'user_name' => $stream['user_name']
+        ];
     }
 } else {
-    echo 'No hay streams activos en este momento.';
+    $respuesta['message'] = 'No hay streams activos en este momento.';
 }
+
+// Establecer el encabezado de contenido como JSON
+header('Content-Type: application/json');
+
+// Devolver la respuesta en formato JSON
+echo json_encode($respuesta);
 
 ?>
