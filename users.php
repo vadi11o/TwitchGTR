@@ -6,11 +6,11 @@ $user_id = '';
 if (isset($_GET['id'])) {
     // Obtener el valor del parámetro "id"
     $user_id = $_GET['id'];
-
-    // Puedes realizar otras acciones según tus necesidades aquí
 } else {
-    // Si no se proporcionó el parámetro "id", mostrar un mensaje de error o realizar acciones adicionales según sea necesario
-    echo 'Error: El parámetro "id" no se proporcionó en la URL.';
+    // Si no se proporcionó el parámetro "id", mostrar un mensaje de error en formato JSON
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'El parámetro "id" no se proporcionó en la URL.']);
+    exit; // Terminar la ejecución del script
 }
 
 // Datos de tu aplicación en Twitch
@@ -43,7 +43,9 @@ $response = curl_exec($ch);
 
 // Verificar si hay errores
 if (curl_errno($ch)) {
-    echo 'Error al realizar la solicitud cURL: ' . curl_error($ch);
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Error al realizar la solicitud cURL: ' . curl_error($ch)]);
+    exit; // Terminar la ejecución del script
 }
 
 // Cerrar la sesión cURL
@@ -52,11 +54,10 @@ curl_close($ch);
 // Decodificar la respuesta JSON
 $result = json_decode($response, true);
 
-
-// Token
+// Extraer el token de acceso
 $token = $result['access_token'];
 
-// URL de la API de Twitch
+// URL de la API de Twitch para obtener información del usuario
 $url = 'https://api.twitch.tv/helix/users?id=' . $user_id;
 
 // Inicializar el recurso cURL
@@ -74,7 +75,9 @@ $response = curl_exec($ch);
 
 // Verificar si hay errores
 if (curl_errno($ch)) {
-    echo 'Error al realizar la solicitud cURL: ' . curl_error($ch);
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Error al realizar la solicitud cURL: ' . curl_error($ch)]);
+    exit; // Terminar la ejecución del script
 }
 
 // Cerrar la sesión cURL
@@ -83,7 +86,10 @@ curl_close($ch);
 // Decodificar la respuesta JSON
 $result = json_decode($response, true);
 
-// Imprimir la respuesta
-print_r($result);
+// Establecer el encabezado para indicar que el contenido es JSON
+header('Content-Type: application/json');
+
+// Imprimir la respuesta en formato JSON
+echo json_encode($result);
 
 ?>
