@@ -52,10 +52,10 @@ if (curl_errno($ch)) {
 curl_close($ch);
 
 // Decodificar la respuesta JSON
-$result = json_decode($response, true);
+$result_token = json_decode($response, true);
 
 // Extraer el token de acceso
-$token = $result['access_token'];
+$token = $result_token['access_token'];
 
 // URL de la API de Twitch para obtener información del usuario
 $url = 'https://api.twitch.tv/helix/users?id=' . $user_id;
@@ -84,12 +84,22 @@ if (curl_errno($ch)) {
 curl_close($ch);
 
 // Decodificar la respuesta JSON
-$result = json_decode($response, true);
+$result_user = json_decode($response, true);
 
-// Establecer el encabezado para indicar que el contenido es JSON
-header('Content-Type: application/json');
+// Verificar si se encontraron datos de usuario
+if (!empty($result_user['data'])) {
+    // Obtener los datos del primer usuario (asumiendo que solo hay uno)
+    $user_data = $result_user['data'][0];
 
-// Imprimir la respuesta en formato JSON
-echo json_encode($result);
+    // Establecer el encabezado para indicar que el contenido es JSON
+    header('Content-Type: application/json');
+
+    // Imprimir la respuesta en formato JSON con la estructura deseada
+    echo json_encode($user_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+} else {
+    // Mostrar un mensaje de error si no se encontraron datos de usuario
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'No se encontraron datos de usuario para el ID proporcionado.']);
+}
 
 ?>
