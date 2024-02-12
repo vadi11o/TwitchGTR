@@ -1,0 +1,14 @@
+
+# HTID:22897593: DO NOT REMOVE OR MODIFY THIS LINE AND THE LINES BELOW
+php_value display_errors 1
+# DO NOT REMOVE OR MODIFY THIS LINE AND THE LINES ABOVE HTID:22897593:
+RewriteEngine On
+
+# Redirigir si alguien entra con la extensión .php en la URL
+RewriteCond %{THE_REQUEST} \s/+(.*?/)?(?:index)?(.*?)\.php[\s?/] [NC]
+RewriteRule ^ /%1%2 [R=302,L,NE]
+
+# Reescribir para servir el archivo PHP sin extensión en la URL
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.+?)/?$ $1.php [L]
+
