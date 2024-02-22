@@ -1,6 +1,6 @@
 <?php
 // Token de acceso de Twitch
-$accessToken = 'lnm1pu5arycs3d30nhujdeybitflqv';
+$access_token = 'lnm1pu5arycs3d30nhujdeybitflqv';
 $client_id = 'obl5c2tqnowx1ihivi6qlwd5dp2d0c';
 $client_secret = '6quagkprun03rxzngemtntly5jl79d';
 
@@ -54,11 +54,19 @@ $password = "fahber-Xenmu0-siffat"; // Reemplaza con tu contraseña de MySQL
 $database = "id21862142_topsofthetopsbbdd"; // Reemplaza con el nombre de tu base de datos
 
 // Crear conexión
-$conn = new mysqli($servername, $username, $password, $dbname);
+$conn = new mysqli($servername, $username, $password, $database);
 
 // Verificar la conexión
 if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
+}
+
+// Vaciar la tabla topGames antes de rellenarla con nuevos datos
+$sql_delete = "DELETE FROM topGames";
+if ($conn->query($sql_delete) === true) {
+    echo "Se vació la tabla topGames correctamente.\n";
+} else {
+    echo "Error al vaciar la tabla topGames: " . $conn->error;
 }
 
 // Insertar los juegos más populares en la base de datos
@@ -66,9 +74,9 @@ foreach ($topGames as $game) {
     $game_id = $game['id'];
     $game_name = $game['name'];
 
-    $sql = "INSERT INTO topGames (game_id, game_name) VALUES ('$game_id', '$game_name')";
+    $sql_insert = "INSERT INTO topGames (game_id, game_name) VALUES ('$game_id', '$game_name')";
 
-    if ($conn->query($sql) === true) {
+    if ($conn->query($sql_insert) === true) {
         echo "Registro insertado correctamente: $game_name\n";
     } else {
         echo "Error al insertar registro: " . $conn->error;
