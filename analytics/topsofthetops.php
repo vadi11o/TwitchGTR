@@ -46,7 +46,7 @@ foreach($games as $game){
     $lista_json[] = obtenerTopsOfTheTops($game['game_id'], conexionBBDD());
 }
 
-$json = json_encode($lista_json, JSON_PRETTY_PRINT);
+$json = json_encode($lista_json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
 header('Content-Type: application/json');
 
@@ -102,8 +102,8 @@ function obtenerTopsOfTheTops($game_id, $conn) {
 
 function conexionBBDD(){
     $servername = "localhost";
-    $username = "id21862142_equipogtr"; // Reemplaza con tu nombre de usuario de MySQL
-    $password = "fahber-Xenmu0-siffat"; // Reemplaza con tu contraseña de MySQL
+    $username = "id21862142_equipogtr";
+    $password = "fahber-Xenmu0-siffat"; 
     $database = "id21862142_topsofthetopsbbdd";
 
     // Crear conexión a la base de datos
@@ -124,20 +124,6 @@ function actualizaTops($game_id) {
 }
 //obtiene los 3 ids de la tabla topGames
 function obtenerGameIDs() {
-    // Datos de conexión a la base de datos
-    /*$servername = "localhost";
-    $username = "id21862142_equipogtr"; // Reemplaza con tu nombre de usuario de MySQL
-    $password = "fahber-Xenmu0-siffat"; // Reemplaza con tu contraseña de MySQL
-    $database = "id21862142_topsofthetopsbbdd";
-
-    // Crear conexión a la base de datos
-    $conn = new mysqli($servername, $username, $password, $database);
-
-    // Verificar la conexión
-    if ($conn->connect_error) {
-        die("Conexión fallida: " . $conn->connect_error);
-    }*/
-    
     $conn = conexionBBDD();
     // Inicializar un array para almacenar los game_ids
     $game_data = array();
@@ -166,20 +152,6 @@ function obtenerGameIDs() {
 
 
 function actualizarTopOfTheTop($game_id, $game_name, $esta_en_BBDD) {
-    // Datos de conexión a la base de datos
-    /*$servername = "localhost";
-    $username = "id21862142_equipogtr"; // Reemplaza con tu nombre de usuario de MySQL
-    $password = "fahber-Xenmu0-siffat"; // Reemplaza con tu contraseña de MySQL
-    $database = "id21862142_topsofthetopsbbdd";
-
-    // Crear conexión a la base de datos
-    $conn = new mysqli($servername, $username, $password, $database);
-
-    // Verificar la conexión
-    if ($conn->connect_error) {
-        die("Conexión fallida: " . $conn->connect_error);
-    }*/
-    
     $conn = conexionBBDD();
 
     // Consultar la fila con más views en la tabla topVideos
@@ -237,20 +209,6 @@ function actualizarTopOfTheTop($game_id, $game_name, $esta_en_BBDD) {
             // Cerrar la sentencia y la conexión
             $stmt->close();
         }
-
-        // Preparar la sentencia de inserción
-        $stmt = $conn->prepare($top_sql);
-        $stmt->bind_param("sssiissss", $game_id, $game_name, $video_popular['user_name'], $video_popular['total_videos'], $video_popular['total_views'], $video_popular['most_viewed_title'], $video_popular['most_viewed_views'], $video_popular['most_viewed_duration'], $video_popular['most_viewed_created_at']);
-
-        // Ejecutar la sentencia de inserción
-        if ($stmt->execute()) {
-            //echo "Datos insertados correctamente en la tabla topOfTheTops.";
-        } else {
-            //echo "Error al insertar datos en la tabla topOfTheTops: " . $stmt->error;
-        }
-
-        // Cerrar la sentencia y la conexión
-        $stmt->close();
     } else {
         //echo "No se encontraron videos en la tabla topVideos.";
     }
@@ -262,21 +220,7 @@ function actualizarTopOfTheTop($game_id, $game_name, $esta_en_BBDD) {
 
 
 
-function hayQueActualizar($game_id, $since) {
-    // Datos de conexión a la base de datos
-    /*$servername = "localhost";
-    $username = "id21862142_equipogtr"; // Reemplaza con tu nombre de usuario de MySQL
-    $password = "fahber-Xenmu0-siffat"; // Reemplaza con tu contraseña de MySQL
-    $database = "id21862142_topsofthetopsbbdd";
-
-    // Crear conexión a la base de datos
-    $conn = new mysqli($servername, $username, $password, $database);
-
-    // Verificar la conexión
-    if ($conn->connect_error) {
-        die("Conexión fallida: " . $conn->connect_error);
-    }*/
-    
+function hayQueActualizar($game_id, $since) {   
     $conn = conexionBBDD();
 
     // Consultar si el game_id existe en la tabla topOfTheTops
