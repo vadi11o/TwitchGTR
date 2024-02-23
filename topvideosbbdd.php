@@ -25,7 +25,7 @@ $conn->set_charset('utf8mb4');
 // Vaciar la tabla topVideos
 $sql_truncate = "TRUNCATE TABLE topVideos";
 if ($conn->query($sql_truncate) === true) {
-    echo "La tabla topVideos se ha vaciado correctamente.\n";
+    //echo "La tabla topVideos se ha vaciado correctamente.\n";
 } else {
     echo "Error al vaciar la tabla topVideos: " . $conn->error;
 }
@@ -38,7 +38,6 @@ $headers = array(
     'Client-Id: ' . $client_id
 );
 
-// Configuración de la solicitud a la API de Twitch
 $curl = curl_init();
 curl_setopt_array($curl, array(
     CURLOPT_URL => $url,
@@ -82,7 +81,7 @@ foreach ($data['data'] as $video) {
     $sql = "INSERT INTO topVideos (video_id, game_id, title, views, user_name, duration, created_at) VALUES ('$video_id', '$game_id', '$title', $views, '$user_name', '$duration', '$created_at')";
 
     if ($conn->query($sql) === true) {
-        echo "Datos del video insertados correctamente: $title\n";
+        //echo "Datos del video insertados correctamente: $title\n";
     } else {
         echo "Error al insertar datos del video: " . $conn->error;
     }

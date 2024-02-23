@@ -64,7 +64,7 @@ if ($conn->connect_error) {
 // Vaciar la tabla topGames antes de rellenarla con nuevos datos
 $sql_delete = "DELETE FROM topGames";
 if ($conn->query($sql_delete) === true) {
-    echo "Se vació la tabla topGames correctamente.\n";
+    //echo "Se vació la tabla topGames correctamente.\n";
 } else {
     echo "Error al vaciar la tabla topGames: " . $conn->error;
 }
@@ -77,7 +77,7 @@ foreach ($topGames as $game) {
     $sql_insert = "INSERT INTO topGames (game_id, game_name) VALUES ('$game_id', '$game_name')";
 
     if ($conn->query($sql_insert) === true) {
-        echo "Registro insertado correctamente: $game_name\n";
+        //echo "Registro insertado correctamente: $game_name\n";
     } else {
         echo "Error al insertar registro: " . $conn->error;
     }
