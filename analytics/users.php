@@ -59,6 +59,7 @@ if ($result->num_rows == 0) {
         echo "No se pudo obtener información del usuario de Twitch.";
     }
 } else {
+    //aqui el codigo de borja 
     echo "El usuario ya existe en la base de datos.";
 }
 
