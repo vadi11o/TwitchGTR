@@ -13,6 +13,39 @@ if (isset($_GET['id'])) {
     exit; // Terminar la ejecución del script
 }
 
+
+//Comprobación existencia en BBDD
+$servername = "localhost";
+$username = "id21862142_equipogtr"; 
+$password = "fahber-Xenmu0-siffat"; 
+$database = "id21862142_topsofthetopsbbdd"; 
+
+$conn = new mysqli($servername, $username, $password, $database);
+
+if ($conn->connect_error) {
+    die("Conexión fallida: " . $conn->connect_error);
+}
+
+$sql = "SELECT * FROM users WHERE twitch_id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows > 0) {
+
+    $user_data = $result->fetch_assoc();
+    header('Content-Type: application/json');
+    echo json_encode($user_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+    $stmt->close();
+    $conn->close();
+    exit;
+}
+
+$stmt->close();
+$conn->close();
+
+
 // Datos de tu aplicación en Twitch
 $client_id = 'obl5c2tqnowx1ihivi6qlwd5dp2d0c';
 $client_secret = '6quagkprun03rxzngemtntly5jl79d';
