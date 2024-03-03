@@ -10,59 +10,95 @@ if (isset($_GET['id'])) {
     exit;
 }
 
-// Datos de conexión a la base de datos
 $servername = "localhost";
 $username = "id21862142_equipogtr"; 
 $password = "fahber-Xenmu0-siffat"; 
 $database = "id21862142_topsofthetopsbbdd"; 
 
-$conn = new mysqli($servername, $username, $password, $dbname);
+$conn = new mysqli($servername, $username, $password, $database);
 
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    die("Conexión fallida: " . $conn->connect_error);
 }
 
-$sql = "SELECT id FROM users  WHERE twitch_id  = '$user_id'";
-$result = $conn->query($sql);
+$sql = "SELECT * FROM users WHERE twitch_id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
 
-if ($result->num_rows == 0) {
-    // El usuario no existe en la base de datos, realizar petición a la API de Twitch
+if ($result->num_rows > 0) {
+    $user_data = $result->fetch_assoc();
+    header('Content-Type: application/json');
+    echo json_encode($user_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+} else {
+    // Datos de tu aplicación en Twitch para obtener el token
     $client_id = 'obl5c2tqnowx1ihivi6qlwd5dp2d0c';
-    $oauth_token = '6quagkprun03rxzngemtntly5jl79d';
-    $ch = curl_init();
-    
-    curl_setopt($ch, CURLOPT_URL, "https://api.twitch.tv/helix/users?id=$user_id");
+    $client_secret = '6quagkprun03rxzngemtntly5jl79d';
+    $url = 'https://id.twitch.tv/oauth2/token';
+    $data = array(
+        'client_id' => $client_id,
+        'client_secret' => $client_secret,
+        'grant_type' => 'client_credentials'
+    );
+
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
+    $response = curl_exec($ch);
+
+    if (curl_errno($ch)) {
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'Error al realizar la solicitud cURL: ' . curl_error($ch)]);
+        exit;
+    }
+    curl_close($ch);
+    $result_token = json_decode($response, true);
+    $token = $result_token['access_token'];
+
+    // Usar el token para obtener información del usuario desde la API de Twitch
+    $url = 'https://api.twitch.tv/helix/users?id=' . $user_id;
+    $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-        "Client-ID: $client_id",
-        "Authorization: Bearer $oauth_token"
+        'Authorization: Bearer ' . $token,
+        'Client-Id: ' . $client_id
     ));
-    
     $response = curl_exec($ch);
-    curl_close($ch);
-    
-    $data = json_decode($response, true);
-    
-    if (!empty($data['data'])) {
-        // Asumiendo que la API de Twitch devolvió la información correctamente
-        // Ajusta los siguientes campos según los datos que quieras guardar y que devuelva la API
-        $nombre_usuario = $data['data'][0]['login'];
-        // Insertar el usuario en la base de datos
-        $sql_insert = "INSERT INTO tu_tabla_de_usuarios (id, nombre_usuario) VALUES ('$user_id', '$nombre_usuario')";
-        
-        if ($conn->query($sql_insert) === TRUE) {
-            echo "Nuevo usuario creado exitosamente.";
-        } else {
-            echo "Error al crear el usuario: " . $conn->error;
-        }
-    } else {
-        echo "No se pudo obtener información del usuario de Twitch.";
+
+    if (curl_errno($ch)) {
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'Error al realizar la solicitud cURL: ' . curl_error($ch)]);
+        exit;
     }
-} else {
-    //aqui el codigo de borja 
-    echo "El usuario ya existe en la base de datos.";
+    curl_close($ch);
+    $result_user = json_decode($response, true);
+
+    if (!empty($result_user['data'])) {
+        $user_data = $result_user['data'][0];
+        $insert_sql = "INSERT INTO users (twitch_id, username) VALUES (?, ?)";
+        $insert_stmt = $conn->prepare($insert_sql);
+        $insert_stmt->bind_param("ss", $user_id, $user_data['display_name']);
+        $insert_stmt->execute();
+
+        if ($insert_stmt->affected_rows > 0) {
+            header('Content-Type: application/json');
+            echo json_encode($user_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+        } else {
+            header('Content-Type: application/json');
+            echo json_encode(['error' => 'No se pudo guardar el usuario en la base de datos.']);
+        }
+
+        $insert_stmt->close();
+    } else {
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'No se encontraron datos de usuario para el ID proporcionado.']);
+    }
 }
 
+$stmt->close();
 $conn->close();
-?>
 
+?>
