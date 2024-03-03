@@ -68,14 +68,30 @@ function actualizar_token() {
         die("Conexión fallida: " . $conn->connect_error);
     }
 
-    // Preparar la consulta SQL
-    $sql = "UPDATE token SET access_token='$token' WHERE id=1"; // Ajusta la condición WHERE según tu esquema
+    // Verificar si hay algún registro en la tabla
+    $sql_check = "SELECT COUNT(*) as count FROM token";
+    $result_check = $conn->query($sql_check);
 
-    // Ejecutar la consulta
-    if ($conn->query($sql) === TRUE) {
-        echo "Token actualizado correctamente en la base de datos";
+    if ($result_check->num_rows > 0) {
+        $row_check = $result_check->fetch_assoc();
+        $count = $row_check['count'];
+
+        if ($count > 0) {
+            // Si hay registros, realizar una actualización
+            $sql = "UPDATE token SET access_token='$token' WHERE id=1";
+        } else {
+            // Si no hay registros, realizar una inserción
+            $sql = "INSERT INTO token (id, access_token) VALUES (1, '$token')";
+        }
+
+        // Ejecutar la consulta
+        if ($conn->query($sql) === TRUE) {
+            echo "Token actualizado correctamente en la base de datos";
+        } else {
+            echo "Error al actualizar o insertar el token en la base de datos: " . $conn->error;
+        }
     } else {
-        echo "Error al actualizar el token en la base de datos: " . $conn->error;
+        echo "Error al verificar la existencia de registros en la base de datos: " . $conn->error;
     }
 
     // Cerrar la conexión
@@ -117,9 +133,11 @@ function recibir_token() {
         // Devolver el token
         return $token;
     } else {
-        // Si no se encuentra ningún token, devolver un valor por defecto o manejar según sea necesario
         $conn->close();
-        return null;
+
+        actualizar_token();
+
+        return recibir_token();
     }
 }
 
