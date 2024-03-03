@@ -117,9 +117,11 @@ function recibir_token() {
         // Devolver el token
         return $token;
     } else {
-        // Si no se encuentra ningún token, devolver un valor por defecto o manejar según sea necesario
         $conn->close();
-        return null;
+
+        actualizar_token();
+
+        return recibir_token();
     }
 }
 
