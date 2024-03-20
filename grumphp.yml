@@ -34,7 +34,7 @@ grumphp:
             max_body_width: 72
             max_subject_width: 60
             matchers:
-                Must contain JIRA issue number: /JIRA-([0-999]*)/
+                Must contain JIRA issue number: /\[([^\]]+)\] - (.+)/
             case_insensitive: true
             multiline: true
             additional_modifiers: ''
