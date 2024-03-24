@@ -1,0 +1,40 @@
+grumphp:
+  task:
+    phpcs:
+      standard: ['PSR12']
+        severity: ~
+        error_severity: ~
+        warning_severity: ~
+        tab_width: ~
+        report: full
+        report_width: ~
+        whitelist_patterns: []
+        encoding: ~
+        ignore_patterns: []
+        sniffs: []
+        triggered_by: [php]
+        exclude: []
+        show_sniffs_error_path: true
+
+    phpmd:
+      whitelist_patterns: []
+        exclude: []
+        report_format: text
+        ruleset: ['cleancode', 'codesize', 'naming']
+        triggered_by: ['php']
+
+    git_commit_message:
+            allow_empty_message: false
+            enforce_capitalized_subject: true
+            enforce_no_subject_punctuations: false
+            enforce_no_subject_trailing_period: true
+            enforce_single_lined_subject: true
+            type_scope_conventions: []
+            skip_on_merge_commit: true
+            max_body_width: 72
+            max_subject_width: 60
+            matchers:
+                Must contain JIRA issue number: /\[([^\]]+)\] - (.+)/
+            case_insensitive: true
+            multiline: true
+            additional_modifiers: ''
