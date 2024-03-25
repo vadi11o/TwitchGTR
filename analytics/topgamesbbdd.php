@@ -1,91 +1,98 @@
 <?php
-// Token de acceso de Twitch
-$access_token = 'lnm1pu5arycs3d30nhujdeybitflqv';
-$client_id = 'obl5c2tqnowx1ihivi6qlwd5dp2d0c';
-$client_secret = '6quagkprun03rxzngemtntly5jl79d';
 
-// URL de la API de Twitch para obtener los juegos más populares
-$url = 'https://api.twitch.tv/helix/games/top';
+$twitchClientID = 'obl5c2tqnowx1ihivi6qlwd5dp2d0c';
 
-$headers = array(
-    'Authorization: Bearer ' . $access_token,
-    'Client-Id: ' . $client_id
-);
+$dbServername = "localhost";
+$dbUsername = "id21862142_equipogtr";
+$dbPassword = "fahber-Xenmu0-siffat";
+$dbName = "id21862142_topsofthetopsbbdd";
 
-// Configuración de la solicitud a la API de Twitch
-$curl = curl_init();
-curl_setopt_array($curl, array(
-    CURLOPT_URL => 'https://api.twitch.tv/helix/games/top?first=3',
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_ENCODING => '',
-    CURLOPT_MAXREDIRS => 10,
-    CURLOPT_TIMEOUT => 0,
-    CURLOPT_FOLLOWLOCATION => true,
-    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-    CURLOPT_CUSTOMREQUEST => 'GET',
-    CURLOPT_HTTPHEADER => $headers,
-));
+function fetchTopGamesFromTwitchAPI($accessToken, $clientID) {
+    $url = 'https://api.twitch.tv/helix/games/top?first=3';
+    $headers = array(
+        "Authorization: Bearer $accessToken",
+        "Client-Id: $clientID"
+    );
 
-// Realizar la solicitud a la API de Twitch
-$tiwtchResponse = curl_exec($curl);
+    $curl = curl_init();
+    curl_setopt_array($curl, array(
+        CURLOPT_URL => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER => $headers,
+    ));
 
-// Verificar si hay errores en la solicitud
-if ($tiwtchResponse === false) {
-    echo 'Error en la solicitud: ' . curl_error($curl);
-    exit;
+    $response = curl_exec($curl);
+
+    if ($response === false) {
+        echo 'Error en la solicitud: ' . curl_error($curl);
+        exit;
+    }
+
+    curl_close($curl);
+    return json_decode($response, true);
 }
 
-// Decodificar la respuesta JSON
-$data = json_decode($tiwtchResponse, true);
 
-// Verificar si la respuesta contiene datos válidos
-if (!isset($data['data']) || empty($data['data'])) {
+function connectToDatabase($servername, $username, $password, $database) {
+    $conn = new mysqli($servername, $username, $password, $database);
+
+    if ($conn->connect_error) {
+        die("Conexión fallida: " . $conn->connect_error);
+    }
+
+    return $conn;
+}
+
+function clearTopGamesTable($conn) {
+    $sql = "DELETE FROM topGames";
+    if (!$conn->query($sql)) {
+        echo "Error al vaciar la tabla topGames: " . $conn->error;
+    }
+}
+
+function insertTopGamesIntoDatabase($conn, $games) {
+    foreach ($games as $game) {
+        $sql = "INSERT INTO topGames (game_id, game_name) VALUES (?, ?)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("ss", $game['id'], $game['name']);
+        
+        if (!$stmt->execute()) {
+            echo "Error al insertar registro: " . $stmt->error;
+        }
+        $stmt->close();
+    }
+}
+
+function obtainTokenFromDataBase($servername, $username, $password, $database) {
+    $conexionDataBase = new mysqli($servername, $username, $password, $database);
+    if ($conexionDataBase->connect_error) {
+        die("Fallo en la conexión: " . $conexionDataBase->connect_error);
+    }
+
+    $querySql = "SELECT access_token FROM token WHERE id = 1";
+    $resultQuerySql = $conexionDataBase->query($querySql);
+    if ($resultQuerySql->num_rows > 0) {
+        $row = $resultQuerySql->fetch_assoc();
+        $conexionDataBase->close();
+        return $row['access_token'];
+    } else {
+        $conexionDataBase->close();
+        return false;
+    }
+}
+
+$twitchAccessToken = obtainTokenFromDataBase($dbServername, $dbUsername, $dbPassword, $dbName);
+$twitchResponse = fetchTopGamesFromTwitchAPI($twitchAccessToken, $twitchClientID);
+
+if (!isset($twitchResponse['data']) || empty($twitchResponse['data'])) {
     echo 'No se encontraron datos válidos en la respuesta de la API de Twitch.';
     exit;
 }
 
-// Seleccionar los tres primeros juegos más populares
-$topGames = array_slice($data['data'], 0, 3);
+$topGames = array_slice($twitchResponse['data'], 0, 3);
 
-// Conexión a la base de datos
-$servername = "localhost";
-$username = "id21862142_equipogtr"; // Reemplaza con tu nombre de usuario de MySQL
-$password = "fahber-Xenmu0-siffat"; // Reemplaza con tu contraseña de MySQL
-$database = "id21862142_topsofthetopsbbdd"; // Reemplaza con el nombre de tu base de datos
-
-// Crear conexión
-$conn = new mysqli($servername, $username, $password, $database);
-
-// Verificar la conexión
-if ($conn->connect_error) {
-    die("Conexión fallida: " . $conn->connect_error);
-}
-
-// Vaciar la tabla topGames antes de rellenarla con nuevos datos
-$sql_delete = "DELETE FROM topGames";
-if ($conn->query($sql_delete) === true) {
-    //echo "Se vació la tabla topGames correctamente.\n";
-} else {
-    echo "Error al vaciar la tabla topGames: " . $conn->error;
-}
-
-// Insertar los juegos más populares en la base de datos
-foreach ($topGames as $game) {
-    $game_id = $game['id'];
-    $game_name = $game['name'];
-
-    $sql_insert = "INSERT INTO topGames (game_id, game_name) VALUES ('$game_id', '$game_name')";
-
-    if ($conn->query($sql_insert) === true) {
-        //echo "Registro insertado correctamente: $game_name\n";
-    } else {
-        echo "Error al insertar registro: " . $conn->error;
-    }
-}
-
-// Cerrar conexión a la base de datos
-$conn->close();
-
-// Cerrar la conexión cURL
-curl_close($curl);
+$databaseConexion = connectToDatabase($dbServername, $dbUsername, $dbPassword, $dbName);
+clearTopGamesTable($databaseConexion);
+insertTopGamesIntoDatabase($databaseConexion, $topGames);
+$databaseConexion->close();
 ?>

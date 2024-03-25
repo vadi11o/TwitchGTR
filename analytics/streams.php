@@ -1,7 +1,7 @@
 <?php
 
-$client_id = 'obl5c2tqnowx1ihivi6qlwd5dp2d0c';
-$client_secret = '6quagkprun03rxzngemtntly5jl79d';
+$TwitchClientId = 'obl5c2tqnowx1ihivi6qlwd5dp2d0c';
+$TwitchClientSecret = '6quagkprun03rxzngemtntly5jl79d';
 
 $servername = "localhost";
 $username = "id21862142_equipogtr"; 
@@ -92,7 +92,7 @@ if (!$token) {
     die("No se pudo obtener el token de la base de datos.");
 }
 
-$tiwtchResponse = curlPetition($url, $token, $client_id);
+$tiwtchResponse = curlPetition($url, $token, $TwitchClientId);
 $decodeJsonFromTwitch = decodeJsonfromTwitch($tiwtchResponse);
 $resultFromVerificationActiveStreams = verifyActiveStreams($decodeJsonFromTwitch);
 
