@@ -83,10 +83,22 @@ function curlPetitionToTwitch($clientId, $token, $user_id) {
 }
 
 
-function tiwtchResponseDecoder($twitchResponse) {
+function tiwtchResponseDecoder($twitchResponse, $servername, $username, $password, $database) {
     $result_user = json_decode($twitchResponse, true);
     if (!empty($result_user['data'])) {
         $user_data = $result_user['data'][0];
+        
+        // Conexión a la base de datos
+        $conn = new mysqli($servername, $username, $password, $database);
+        if ($conn->connect_error) {
+            die("Fallo en la conexión: " . $conn->connect_error);
+        }
+
+        // Insertar usuario en la base de datos
+        insertUserIntoDatabase($conn, $user_data);
+        $conn->close();
+
+        // Retornar los datos del usuario
         header('Content-Type: application/json');
         echo json_encode($user_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
     } else {
@@ -94,6 +106,28 @@ function tiwtchResponseDecoder($twitchResponse) {
         echo json_encode(['error' => 'No se encontraron datos de usuario para el ID proporcionado.']);
     }
 }
+
+
+function insertUserIntoDatabase($conn, $user_data) {
+    $formatted_date = date('Y-m-d H:i:s', strtotime($user_data['created_at']));
+
+    $sql = "INSERT INTO users (twitch_id, login, display_name, type, broadcaster_type, description, profile_image_url, offline_image_url, view_count, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    
+    
+    if ($stmt = $conn->prepare($sql)) {
+        $stmt->bind_param("ssssssssis", 
+            $user_data['id'], $user_data['login'], $user_data['display_name'], 
+            $user_data['type'], $user_data['broadcaster_type'], $user_data['description'], 
+            $user_data['profile_image_url'], $user_data['offline_image_url'], 
+            $user_data['view_count'], $formatted_date);
+
+        $stmt->execute();
+        $stmt->close();
+    } else {
+        echo "Error al preparar la inserción: " . $conn->error;
+    }
+}
+
 
 
 $user_id = getUserIdFromUrl();
@@ -105,7 +139,7 @@ if (!getInfoUserFromDataBase($servername, $username, $password, $database, $user
     if ($token) {
 
         $twitchResponse = curlPetitionToTwitch($clientId, $token, $user_id);
-        tiwtchResponseDecoder($twitchResponse);
+        tiwtchResponseDecoder($twitchResponse, $servername, $username, $password, $database);
     } else {
        
         header('Content-Type: application/json');
