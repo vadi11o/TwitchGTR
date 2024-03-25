@@ -1,80 +1,100 @@
 <?php
 
-// Datos de tu aplicación en Twitch
 $client_id = 'obl5c2tqnowx1ihivi6qlwd5dp2d0c';
 $client_secret = '6quagkprun03rxzngemtntly5jl79d';
-include "token.php";
-// Token
-$token = recibir_token();
 
-// URL de la API de Twitch para obtener información sobre los streams
+$servername = "localhost";
+$username = "id21862142_equipogtr"; 
+$password = "fahber-Xenmu0-siffat";
+$database = "id21862142_topsofthetopsbbdd";
+
 $url = 'https://api.twitch.tv/helix/streams';
 
-// Inicializar el recurso cURL
-$ch = curl_init($url);
-
-// Configurar las opciones de cURL
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-    'Authorization: Bearer ' . $token,
-    'Client-Id: ' . $client_id
-));
-
-// Ejecutar la solicitud cURL y obtener la respuesta
-$response = curl_exec($ch);
-
-// Verificar si hay errores
-if (curl_errno($ch)) {
-    // Devolver un error en formato JSON y terminar la ejecución
-    header('Content-Type: application/json');
-    echo json_encode(['error' => 'Error al realizar la solicitud cURL para obtener información sobre los streams: ' . curl_error($ch)]);
-    exit;
-}else{
-	curl_close($ch);
-	actualizar_token();
-	$token = recibir_token();
-	$ch = curl_init($url);
-
-// Configurar las opciones de cURL
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-    'Authorization: Bearer ' . $token,
-    'Client-Id: ' . $client_id
-));
-
-// Ejecutar la solicitud cURL y obtener la respuesta
-$response = curl_exec($ch);
-header('Content-Type: application/json');
-    echo json_encode(['error' => 'Error al realizar la solicitud cURL para obtener información sobre los streams: ' . curl_error($ch)]);
-    curl_close($ch);
-	
-}
-
-// Cerrar la sesión cURL
-curl_close($ch);
-
-// Decodificar la respuesta JSON
-$result = json_decode($response, true);
-
-// Preparar la respuesta
-$respuesta = [];
-
-// Verificar si hay streams activos
-if (isset($result['data']) && !empty($result['data'])) {
-    foreach ($result['data'] as $stream) {
-        $respuesta[] = [
-            'title' => $stream['title'],
-            'user_name' => $stream['user_name']
-        ];
+function obtainTokenFromDataBase($servername, $username, $password, $database) {
+    $conexionDataBase = new mysqli($servername, $username, $password, $database);
+    if ($conexionDataBase->connect_error) {
+        die("Fallo en la conexión: " . $conexionDataBase->connect_error);
     }
-} else {
-    $respuesta['message'] = 'No hay streams activos en este momento.';
+
+    $querySql = "SELECT access_token FROM token WHERE id = 1";
+    $resultQuerySql = $conexionDataBase->query($querySql);
+    if ($resultQuerySql->num_rows > 0) {
+        $row = $resultQuerySql->fetch_assoc();
+        $conexionDataBase->close();
+        return $row['access_token'];
+    } else {
+        $conexionDataBase->close();
+        return false;
+    }
 }
 
-// Establecer el encabezado de contenido como JSON
+function refreshToken() {
+
+    include "tokenUpdater.php"; 
+}
+
+function validateResponseFromTwitch($tiwtchResponse,$servername, $username, $password, $database, $url, $client_id) {
+    
+    if ($tiwtchResponse['status'] == 401) { 
+        
+        refreshToken();
+        $token = obtainTokenFromDataBase($servername, $username, $password, $database); 
+        $tiwtchResponse = curlPetition($url, $token, $client_id); 
+    }
+
+    
+    if ($tiwtchResponse['status'] != 200) {
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'Error al realizar la solicitud cURL para obtener información sobre los streams: HTTP Status ' . $tiwtchResponse['status']]);
+        exit;
+    }
+
+
+}
+function decodeJsonfromTwitch($tiwtchResponse){
+
+    $result = json_decode($tiwtchResponse['body'], true);
+    return $result;
+}
+
+function verifyActiveStreams($decodeJsonFromTwitch){
+
+    $respuesta = [];
+    // Verificar si hay streams activos
+    if (isset($decodeJsonFromTwitch['data']) && !empty($decodeJsonFromTwitch['data'])) {
+        foreach ($decodeJsonFromTwitch['data'] as $stream) {
+            $respuesta[] = [
+                'title' => $stream['title'],
+                'user_name' => $stream['user_name']
+            ];
+        }
+    } else {
+        $respuesta['message'] = 'No hay streams activos en este momento.';
+    }
+    return $respuesta;
+}
+
+function curlPetition($url, $token, $client_id) {
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Authorization: Bearer $token",
+        "Client-Id: $client_id"
+    ]);
+    $body = curl_exec($ch);
+    $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    return ['status' => $status, 'body' => $body];
+}
+
+$token = obtainTokenFromDataBase($servername, $username, $password, $database);
+if (!$token) {
+    die("No se pudo obtener el token de la base de datos.");
+}
+
+$tiwtchResponse = curlPetition($url, $token, $client_id);
+$decodeJsonFromTwitch = decodeJsonfromTwitch($tiwtchResponse);
+$resultFromVerificationActiveStreams = verifyActiveStreams($decodeJsonFromTwitch);
+
 header('Content-Type: application/json');
-
-// Devolver la respuesta en formato JSON
-echo json_encode($respuesta);
-
-?>
+echo json_encode($resultFromVerificationActiveStreams, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);

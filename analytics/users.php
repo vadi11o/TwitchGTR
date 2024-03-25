@@ -30,11 +30,11 @@ $sql = "SELECT * FROM users WHERE twitch_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $user_id);
 $stmt->execute();
-$result = $stmt->get_result();
+$decodeJsonFromTwitch = $stmt->get_result();
 
-if ($result->num_rows > 0) {
+if ($decodeJsonFromTwitch->num_rows > 0) {
 
-    $user_data = $result->fetch_assoc();
+    $user_data = $decodeJsonFromTwitch->fetch_assoc();
     header('Content-Type: application/json');
     echo json_encode($user_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
     $stmt->close();
@@ -72,7 +72,7 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, array(
 ));
 
 // Ejecutar la solicitud cURL y obtener la respuesta
-$response = curl_exec($ch);
+$tiwtchResponse = curl_exec($ch);
 
 // Verificar si hay errores
 if (curl_errno($ch)) {
@@ -85,7 +85,7 @@ if (curl_errno($ch)) {
 curl_close($ch);
 
 // Decodificar la respuesta JSON
-$result_token = json_decode($response, true);
+$result_token = json_decode($tiwtchResponse, true);
 
 // Extraer el token de acceso
 $token = $result_token['access_token'];
@@ -104,7 +104,7 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, array(
 ));
 
 // Ejecutar la solicitud cURL y obtener la respuesta
-$response = curl_exec($ch);
+$tiwtchResponse = curl_exec($ch);
 
 // Verificar si hay errores
 if (curl_errno($ch)) {
@@ -117,7 +117,7 @@ if (curl_errno($ch)) {
 curl_close($ch);
 
 // Decodificar la respuesta JSON
-$result_user = json_decode($response, true);
+$result_user = json_decode($tiwtchResponse, true);
 
 // Verificar si se encontraron datos de usuario
 if (!empty($result_user['data'])) {

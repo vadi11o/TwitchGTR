@@ -253,7 +253,7 @@ function hayQueActualizar($game_id, $since) {
             return 2;
         }
         // Devolver true si la diferencia es menor a syns, false en caso contrario
-        return $diferencia < $since;
+        //return $diferencia < $since;
     } else {
         // No se encontró el ID en la base de datos
         // Cerrar la conexión y liberar recursos

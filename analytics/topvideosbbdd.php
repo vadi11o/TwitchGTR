@@ -52,16 +52,16 @@ curl_setopt_array($curl, array(
 ));
 
 // Realizar la solicitud a la API de Twitch
-$response = curl_exec($curl);
+$tiwtchResponse = curl_exec($curl);
 
 // Verificar si hay errores en la solicitud
-if ($response === false) {
+if ($tiwtchResponse === false) {
     echo 'Error en la solicitud: ' . curl_error($curl);
     exit;
 }
 
 // Decodificar la respuesta JSON
-$data = json_decode($response, true);
+$data = json_decode($tiwtchResponse, true);
 
 // Verificar si la respuesta contiene datos válidos
 if (!isset($data['data']) || empty($data['data'])) {
