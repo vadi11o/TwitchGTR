@@ -59,7 +59,7 @@ function updateTokenDataBase($token){
 
 }
 
-$newToken = getTokenFromTwitch();
-updateTokenDataBase($newToken);
+$token = getTokenFromTwitch();
+updateTokenDataBase($token);
 
 ?>

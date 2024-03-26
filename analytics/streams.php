@@ -87,12 +87,12 @@ function curlPetition($url, $token, $client_id) {
     return ['status' => $status, 'body' => $body];
 }
 
-$newToken = obtainTokenFromDataBase($dataBaseServername, $dataBaseUsername, $dataBasepassword, $dataBaseName);
-if (!$newToken) {
+$token = obtainTokenFromDataBase($dataBaseServername, $dataBaseUsername, $dataBasepassword, $dataBaseName);
+if (!$token) {
     die("No se pudo obtener el token de la base de datos.");
 }
 
-$tiwtchResponse = curlPetition($url, $newToken, $TwitchClientId);
+$tiwtchResponse = curlPetition($url, $token, $TwitchClientId);
 $decodeJsonFromTwitch = decodeJsonfromTwitch($tiwtchResponse);
 $resultFromVerificationActiveStreams = verifyActiveStreams($decodeJsonFromTwitch);
 
