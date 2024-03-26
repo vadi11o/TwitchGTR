@@ -3,10 +3,10 @@
 $accessToken = 'lnm1pu5arycs3d30nhujdeybitflqv';
 $TwitchClientId = 'obl5c2tqnowx1ihivi6qlwd5dp2d0c';
 
-$servername = "localhost";
-$username = "id21862142_equipogtr";
-$password = "fahber-Xenmu0-siffat";
-$database = "id21862142_topsofthetopsbbdd";
+$dataBaseServername = "localhost";
+$dataBaseUsername = "id21862142_equipogtr";
+$dataBasepassword = "fahber-Xenmu0-siffat";
+$dataBaseName = "id21862142_topsofthetopsbbdd";
 
 function connectToDatabase($servername, $username, $password, $database) {
     $conn = new mysqli($servername, $username, $password, $database);
@@ -86,8 +86,8 @@ function obtainTokenFromDataBase($servername, $username, $password, $database) {
     }
 }
 
-$accessToken = obtainTokenFromDataBase($servername, $username, $password, $database);
-$databaseConexion = connectToDatabase($servername, $username, $password, $database);
+$accessToken = obtainTokenFromDataBase($dataBaseServername, $dataBaseUsername, $dataBasepassword, $dataBaseName);
+$databaseConexion = connectToDatabase($dataBaseServername, $dataBaseUsername, $dataBasepassword, $dataBaseName);
 truncateTable($databaseConexion, "topVideos");
 
 $url = 'https://api.twitch.tv/helix/videos?game_id=' . $game_id . '&first=40&sort=views';

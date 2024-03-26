@@ -1,9 +1,9 @@
 <?php
 
-$servername = "localhost";
-$username = "id21862142_equipogtr"; 
-$password = "fahber-Xenmu0-siffat"; 
-$database = "id21862142_topsofthetopsbbdd"; 
+$dataBaseServername = "localhost";
+$dataBaseUsername = "id21862142_equipogtr"; 
+$dataBasepassword = "fahber-Xenmu0-siffat"; 
+$dataBaseName = "id21862142_topsofthetopsbbdd"; 
 
 
 $clientId = 'obl5c2tqnowx1ihivi6qlwd5dp2d0c';
@@ -133,13 +133,13 @@ function insertUserIntoDatabase($conn, $user_data) {
 $user_id = getUserIdFromUrl();
 
 
-if (!getInfoUserFromDataBase($servername, $username, $password, $database, $user_id)) {
+if (!getInfoUserFromDataBase($dataBaseServername, $dataBaseUsername, $dataBasepassword, $dataBaseName, $user_id)) {
    
-    $token = obtainTokenFromDataBase($servername, $username, $password, $database);
-    if ($token) {
+    $newToken = obtainTokenFromDataBase($dataBaseServername, $dataBaseUsername, $dataBasepassword, $dataBaseName);
+    if ($newToken) {
 
-        $twitchResponse = curlPetitionToTwitch($clientId, $token, $user_id);
-        tiwtchResponseDecoder($twitchResponse, $servername, $username, $password, $database);
+        $twitchResponse = curlPetitionToTwitch($clientId, $newToken, $user_id);
+        tiwtchResponseDecoder($twitchResponse, $dataBaseServername, $dataBaseUsername, $dataBasepassword, $dataBaseName);
     } else {
        
         header('Content-Type: application/json');

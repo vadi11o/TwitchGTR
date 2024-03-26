@@ -3,10 +3,10 @@
 $TwitchClientId = 'obl5c2tqnowx1ihivi6qlwd5dp2d0c';
 $TwitchClientSecret = '6quagkprun03rxzngemtntly5jl79d';
 
-$servername = "localhost";
-$username = "id21862142_equipogtr"; 
-$password = "fahber-Xenmu0-siffat";
-$database = "id21862142_topsofthetopsbbdd";
+$dataBaseServername = "localhost";
+$dataBaseUsername = "id21862142_equipogtr"; 
+$dataBasepassword = "fahber-Xenmu0-siffat";
+$dataBaseName = "id21862142_topsofthetopsbbdd";
 
 $url = 'https://api.twitch.tv/helix/streams';
 
@@ -87,12 +87,12 @@ function curlPetition($url, $token, $client_id) {
     return ['status' => $status, 'body' => $body];
 }
 
-$token = obtainTokenFromDataBase($servername, $username, $password, $database);
-if (!$token) {
+$newToken = obtainTokenFromDataBase($dataBaseServername, $dataBaseUsername, $dataBasepassword, $dataBaseName);
+if (!$newToken) {
     die("No se pudo obtener el token de la base de datos.");
 }
 
-$tiwtchResponse = curlPetition($url, $token, $TwitchClientId);
+$tiwtchResponse = curlPetition($url, $newToken, $TwitchClientId);
 $decodeJsonFromTwitch = decodeJsonfromTwitch($tiwtchResponse);
 $resultFromVerificationActiveStreams = verifyActiveStreams($decodeJsonFromTwitch);
 
